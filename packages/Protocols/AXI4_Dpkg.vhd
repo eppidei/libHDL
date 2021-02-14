@@ -32,10 +32,10 @@ AWCACHE : std_logic_vector;	-- AWCACHE Master Indicates how a write transaction 
 AWPROT : std_logic_vector;	-- AWPROT Master Protection attributes of a write transaction: privilege, security level, and access
 							-- type.
 							-- See Access permissions on page A4-75.
-AWQOS : std_logic_vector;	-- AWQOS Master Quality of Service identifier for a write transaction.
+AWQOS : std_logic_vector(3 downto 0);	-- AWQOS Master Quality of Service identifier for a write transaction.
 							-- Not implemented in AXI3.
 							-- See QoS signaling on page A8-102.
-AWREGION : std_logic_vector;-- AWREGION Master Region indicator for a write transaction.
+AWREGION : std_logic_vector(3 downto 0);-- AWREGION Master Region indicator for a write transaction.
 							-- Not implemented in AXI3.
 							-- See Multiple region signaling on page A8-103.
 AWUSER : std_logic_vector;	-- AWUSER Master User-defined extension for the write address channel.
@@ -110,10 +110,10 @@ ARCACHE : std_logic_vector;	-- ARCACHE Master Indicates how a read transaction i
 							-- See Memory types on page A4-69.
 ARPROT : std_logic_vector;	-- ARPROT Master Protection attributes of a read transaction: privilege, security level, and access type.
 							-- See Access permissions on page A4-75.
-ARQOS : std_logic_vector;	-- ARQOS Master Quality of Service identifier for a read transaction.
+ARQOS : std_logic_vector(3 downto 0);	-- ARQOS Master Quality of Service identifier for a read transaction.
 							-- Not implemented in AXI3.
 							-- See QoS signaling on page A8-102.
-ARREGION : std_logic_vector;-- ARREGION Master Region indicator for a read transaction.
+ARREGION : std_logic_vector(3 downto 0);-- ARREGION Master Region indicator for a read transaction.
 							-- Not implemented in AXI3.
 							-- See Multiple region signaling on page A8-103.
 ARUSER : std_logic_vector;	-- ARUSER Master User-defined extension for the read address channel.
@@ -164,6 +164,148 @@ WDataCh : rAxi4WDataMiSo;
 WRespCh	: rAxi4WRespMiSo;
 RAddrCh : rAxi4RAddrMiSo;
 RDataCh : rAxi4RDataMiSo;
+end record;
+
+-------------------------
+------ AXI4 LITE---------
+-------------------------
+---------------------------- WRITE ADDRESS CHANNEL --------------------------------
+type rAxi4LiteWAddrOptMoSi is record
+AWID : std_logic_vector;    -- AWID Master Identification tag for a write transaction.
+							-- See ID signals on page A5-81.
+AWQOS : std_logic_vector(3 downto 0);	-- AWQOS Master Quality of Service identifier for a write transaction.
+							-- Not implemented in AXI3.
+							-- See QoS signaling on page A8-102.
+AWREGION : std_logic_vector(3 downto 0);-- AWREGION Master Region indicator for a write transaction.
+							-- Not implemented in AXI3.
+							-- See Multiple region signaling on page A8-103.
+AWUSER : std_logic_vector;	-- AWUSER Master User-defined extension for the write address channel.
+							-- Not implemented in AXI3.
+							-- See User-defined signaling on page A8-104.
+end record;
+
+type rAxi4LiteWAddrMoSi is record
+
+AWADDR : std_logic_vector;	-- AWADDR Master The address of the first transfer in a write transaction.
+							-- See Address structure on page A3-48.
+
+AWPROT : std_logic_vector;	-- AWPROT Master Protection attributes of a write transaction: privilege, security level, and access
+							-- type.
+							-- See Access permissions on page A4-75.
+
+AWVALID : std_logic;		-- AWVALID Master Indicates that the write address channel signals are valid.
+							-- See Channel handshake signals on page A3-42.
+
+--OPTIONAL : rAxi4LiteWAddrOptMoSi;						
+
+end record;
+
+type rAxi4LiteWAddrMiSo is record
+AWREADY : std_logic;		-- AWREADY Slave Indicates that a transfer on the write address channel can be accepted.
+							-- See Channel handshake signals on page A3-42.
+end record;
+
+---------------------------- WRITE DATA CHANNEL---------------------------------
+
+type rAxi4LiteWDataOptMoSi is record
+WID : std_logic_vector;		-- WID Master The ID tag of the write data transfer.
+							-- Implemented in AXI3 only.
+							-- See ID signals on page A5-81.
+WUSER : std_logic_vector;	-- WUSER Master User-defined extension for the write data channel.
+							-- Not implemented in AXI3.
+							-- See User-defined signaling on page A8-104.
+end record;
+
+type rAxi4LiteWDataMoSi is record
+
+WDATA : std_logic_vector;	-- WDATA Master Write data.
+							-- See Write data channel on page A3-43.
+WSTRB : std_logic_vector;	-- WSTRB Master Write strobes, indicate which byte lanes hold valid data.
+							-- See Write strobes on page A3-54.
+
+WVALID : std_logic;			-- WVALID Master Indicates that the write data channel signals are valid.
+							-- See Channel handshake signals on page A3-42.
+--OPTIONAL : rAxi4LiteWDataOptMoSi;
+end record;
+
+
+
+type rAxi4LiteWDataMiSo is record
+WREADY : std_logic;			-- WREADY Slave Indicates that a transfer on the write data channel can be accepted.
+							-- See Channel handshake signals on page A3-42.
+end record;
+
+---------------------------- READ ADDRESS CHANNEL --------------------------------
+type rAxi4LiteRAddrMoSiOpt is record
+ARID : std_logic_vector;	-- ARID Master Identification tag for a read transaction.
+							-- See ID signals on page A5-81.
+ARQOS : std_logic_vector(3 downto 0);	-- ARQOS Master Quality of Service identifier for a read transaction.
+							-- Not implemented in AXI3.
+							-- See QoS signaling on page A8-102.
+ARREGION : std_logic_vector(3 downto 0);-- ARREGION Master Region indicator for a read transaction.
+							-- Not implemented in AXI3.
+							-- See Multiple region signaling on page A8-103.
+ARUSER : std_logic_vector;	-- ARUSER Master User-defined extension for the read address channel.
+							-- Not implemented in AXI3.
+							-- See User-defined signaling on page A8-104.
+end record;
+						
+type rAxi4LiteRAddrMoSi is record
+
+ARADDR : std_logic_vector;	-- ARADDR Master The address of the first transfer in a read transaction.
+							-- See Address structure on page A3-48.
+ARPROT : std_logic_vector;	-- ARPROT Master Protection attributes of a read transaction: privilege, security level, and access type.
+							-- See Access permissions on page A4-75.
+
+ARVALID : std_logic;		-- ARVALID Master Indicates that the read address channel signals are valid.
+							-- See Channel handshake signals on page A3-4
+							
+--OPTIONAL : rAxi4LiteRAddrMoSiOpt;
+end record;
+
+type rAxi4LiteRAddrMoSi is record
+ARREADY : std_logic; 		-- ARREADY Slave Indicates that a transfer on the read address channel can be accepted.
+							-- See Channel handshake signals on page A3-42.
+end record;
+
+type rAxi4LiteRDataMoSi is record
+RREADY : std_logic;			-- RREADY Master Indicates that a transfer on the read data channel can be accepted.
+							-- See Channel handshake signals on page A3-42.
+end record;
+
+type rAxi4LiteRDataMiSoOpt is record
+RID : std_logic_vector;		-- RID Slave Identification tag for read data and response.
+							-- See ID signals on page A5-81.
+RUSER : std_logic_vector;	-- RUSER Slave User-defined extension for the read data channel.
+							-- Not implemented in AXI3.
+							-- See User-defined signaling on page A8-104.
+end record;
+
+type rAxi4LiteRDataMiSo is record
+
+RDATA : std_logic_vector;	-- RDATA Slave Read data.
+							-- See Read data channel on page A3-43.
+RRESP : std_logic_vector;	-- RRESP Slave Read response, indicates the status of a read transfer.
+							-- See Read and write response structure on page A3-59.
+RVALID : std_logic;			-- RVALID Slave Indicates that the read data channel signals are valid.
+							-- See Channel handshake signals on page A3-42.
+--OPTIONAL : rAxi4LiteRDataMiSoOpt;
+end record;
+
+type rAxi4LiteMoSi is record
+WAddrCh : rAxi4LiteWAddrMoSi;
+WDataCh : rAxi4LiteWDataMoSi;
+WRespCh	: rAxi4LiteWRespMoSi;
+RAddrCh : rAxi4LiteRAddrMoSi;
+RDataCh : rAxi4LiteRDataMoSi;
+end record;
+
+type rAxi4LiteMiSo is record
+WAddrCh : rAxi4LiteWAddrMiSo;
+WDataCh : rAxi4LiteWDataMiSo;
+WRespCh	: rAxi4LiteWRespMiSo;
+RAddrCh : rAxi4LiteRAddrMiSo;
+RDataCh : rAxi4LiteRDataMiSo;
 end record;
 
 end package Axi4;
