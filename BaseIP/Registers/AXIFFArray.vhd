@@ -8,34 +8,66 @@ use work.FabricBus.all;
 use work.constants.all;
 use work.Utilities.all;
 
--- type rAxi4LiteMoSi is record
--- WAddrCh : rAxi4LiteWAddrMoSi;
--- WDataCh : rAxi4LiteWDataMoSi;
--- WRespCh	: rAxi4LiteWRespMoSi;
--- RAddrCh : rAxi4LiteRAddrMoSi;
--- RDataCh : rAxi4LiteRDataMoSi;
--- end record;
-
 entity eAXIFFArray is
 generic (
-    gRegSpaceDepth        : integer;
-    gRegWidth             : integer;
-    gRegMemAlignment      : integer;
-	gAXI_AWIDWidth 		  : integer
+    gRegSpaceDepth    : integer;
+    gRegWidth         : integer;
+    gRegMemAlignment  : integer;
+	gAXI_ADDRWidth 	  : integer;
+	gAXI_DATAWidth 	  : integer
 );
 port (
     --APB
     iGlobalAXI  : in  rGlobalAxi4;
-    iS_AXI      : in  rAxi4LiteMoSi( rAxi4LiteWAddrMoSi ( AWADDR(gRegWidth-1 downto 0),
-														  AWPROT(gRegWidth/8-1 downto 0),
-														  AWVALID(gRegWidth-1 downto 0),
-																						) ),
-															
-															
-																						);
-    oS_AXI        : out rAxi4LiteMiSo( PRDATA(gRegWidth-1 downto 0));
+    iS_AXI      : in  rAxi4LiteMoSi( WAddrCh ( AWADDR(gAXI_ADDRWidth-1 downto 0)),
+									 WDataCh ( WDATA(gAXI_DATAWidth-1 downto 0),
+											   WSTRB(gAXI_DATAWidth/cBYTELEN-1 downto 0)),
+									 RAddrCh ( ARADDR(gAXI_ADDRWidth-1 downto 0)) );  
+    oS_AXI      : out rAxi4LiteMiSo( RDataCh ( RDATA(gAXI_DATAWidth-1 downto 0)) );
     -- Register Local IF
     iFFArrayIn  : in  arFFDataStream(0 to gRegSpaceDepth-1)(Data(gRegWidth-1 downto 0));
     oFFArrayOut : out arFFDataStream(0 to gRegSpaceDepth-1)(Data(gRegWidth-1 downto 0))  
 );
 end eAXIFFArray;
+
+architecture aMixed of eAPBFFArray is
+
+--Connecting signals
+signal sGlobalFabFF  		: rGlobalFab;
+signal sarFFArrayIn  		: arFFDataStream(0 to gRegSpaceDepth-1)(Data(gRegWidth-1 downto 0)); 
+signal saFFOut       		: aFFRegisters(0 to gRegSpaceDepth-1)(gRegWidth-1 downto 0);
+
+signal sClkEn_AlwaysEnable  : std_logic := cHIGH;
+signal sSrstInactive        : std_logic := cLOW;
+--internally generated axi signals
+signal sRVALID 				: std_logic;
+signal sARREADY 			: std_logic;
+
+begin
+proc_GlobFabMemR : procConnectGlobalFab (sGlobalFabFF,
+                                         iGlobalAXI.PCLK,
+                                         sClkEn_AlwaysEnable,
+                                         sSrstInactive,
+                                         iGlobalAXI.PRESETN);
+
+----------------------------
+------ Registers -----------
+----------------------------
+
+Inst_FFRegisters : entity work.eFFRegisters
+generic map(
+    gRegSpaceDepth  => gRegSpaceDepth,
+    gRegWidth       => gRegWidth
+    )
+port map(
+    iGlobalFab      => sGlobalFabFF,
+    iFFArrayIn      => sarFFArrayIn,
+    oFFArrayOut     => saFFOut
+);
+
+sARREADY <= (not sRVALID) ot ;
+
+
+
+
+end architecture aMixed;

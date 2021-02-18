@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+--comments refferred to doc ARM IHI0022H
 
 package Axi4 is
 
@@ -81,7 +82,7 @@ end record;
 type rAxi4WRespMiS0 is record
 BID : std_logic_vector;		-- BID Slave Identification tag for a write response.
 							-- See ID signals on page A5-81.
-BRESP : std_logic_vector;	-- BRESP Slave Write response, indicates the status of a write transaction.
+BRESP : std_logic_vector(1 downto 0);	-- BRESP Slave Write response, indicates the status of a write transaction.
 							-- See Read and write response structure on page A3-59.
 BUSER : std_logic_vector;	-- BUSER Slave User-defined extension for the write response channel.	
 							-- Not implemented in AXI3.
@@ -138,7 +139,7 @@ RID : std_logic_vector;		-- RID Slave Identification tag for read data and respo
 							-- See ID signals on page A5-81.
 RDATA : std_logic_vector;	-- RDATA Slave Read data.
 							-- See Read data channel on page A3-43.
-RRESP : std_logic_vector;	-- RRESP Slave Read response, indicates the status of a read transfer.
+RRESP : std_logic_vector(1 downto 0);	-- RRESP Slave Read response, indicates the status of a read transfer.
 							-- See Read and write response structure on page A3-59.
 RLAST : std_logic;			-- RLAST Slave Indicates whether this is the last data transfer in a read transaction.
 							-- See Read data channel on page A3-43.
@@ -189,14 +190,14 @@ type rAxi4LiteWAddrMoSi is record
 AWADDR : std_logic_vector;	-- AWADDR Master The address of the first transfer in a write transaction.
 							-- See Address structure on page A3-48.
 
-AWPROT : std_logic_vector;	-- AWPROT Master Protection attributes of a write transaction: privilege, security level, and access
+AWPROT : std_logic_vector(2 downto 0);	-- AWPROT Master Protection attributes of a write transaction: privilege, security level, and access
 							-- type.
 							-- See Access permissions on page A4-75.
 
 AWVALID : std_logic;		-- AWVALID Master Indicates that the write address channel signals are valid.
 							-- See Channel handshake signals on page A3-42.
 
---OPTIONAL : rAxi4LiteWAddrOptMoSi;						
+AWOPTIONAL : rAxi4LiteWAddrOptMoSi;						
 
 end record;
 
@@ -218,20 +219,42 @@ end record;
 
 type rAxi4LiteWDataMoSi is record
 
-WDATA : std_logic_vector;	-- WDATA Master Write data.
+WDATA : std_logic_vector;	-- WDATA Master Write data. 32 or 64 bits
 							-- See Write data channel on page A3-43.
 WSTRB : std_logic_vector;	-- WSTRB Master Write strobes, indicate which byte lanes hold valid data.
 							-- See Write strobes on page A3-54.
 
 WVALID : std_logic;			-- WVALID Master Indicates that the write data channel signals are valid.
 							-- See Channel handshake signals on page A3-42.
---OPTIONAL : rAxi4LiteWDataOptMoSi;
+WOPTIONAL : rAxi4LiteWDataOptMoSi;
 end record;
-
-
 
 type rAxi4LiteWDataMiSo is record
 WREADY : std_logic;			-- WREADY Slave Indicates that a transfer on the write data channel can be accepted.
+							-- See Channel handshake signals on page A3-42.
+end record;
+
+---------------------------- WRITE RESPONSE CHANNEL---------------------------------
+type rAxi4LiteWRespMiSoOpt is record
+BID : std_logic_vector;		-- BID Slave Identification tag for a write response.
+							-- See ID signals on page A5-81.
+BUSER : std_logic_vector;	-- BUSER Slave User-defined extension for the write response channel.	
+							-- Not implemented in AXI3.
+							-- See User-defined signaling on page A8-104.
+end record;
+
+type rAxi4LiteWRespMiSo is record
+
+BRESP : std_logic_vector(1 downto 0);	-- BRESP Slave Write response, indicates the status of a write transaction.
+							-- See Read and write response structure on page A3-59.
+
+BVALID : std_logic;			-- BVALID Slave Indicates that the write response channel signals are valid.
+							-- See Channel handshake signals on page A3-42.
+BOPTIONAL : rAxi4LiteWRespMiSoOpt;
+end record;
+
+type rAxi4LiteWRespMoSi is record
+BREADY : std_logic; 		-- BREADY Master Indicates that a transfer on the write response channel can be accepted.
 							-- See Channel handshake signals on page A3-42.
 end record;
 
@@ -254,16 +277,16 @@ type rAxi4LiteRAddrMoSi is record
 
 ARADDR : std_logic_vector;	-- ARADDR Master The address of the first transfer in a read transaction.
 							-- See Address structure on page A3-48.
-ARPROT : std_logic_vector;	-- ARPROT Master Protection attributes of a read transaction: privilege, security level, and access type.
+ARPROT : std_logic_vector(2 downto 0);	-- ARPROT Master Protection attributes of a read transaction: privilege, security level, and access type.
 							-- See Access permissions on page A4-75.
 
 ARVALID : std_logic;		-- ARVALID Master Indicates that the read address channel signals are valid.
 							-- See Channel handshake signals on page A3-4
 							
---OPTIONAL : rAxi4LiteRAddrMoSiOpt;
+AROPTIONAL : rAxi4LiteRAddrMoSiOpt;
 end record;
 
-type rAxi4LiteRAddrMoSi is record
+type rAxi4LiteRAddrMiSo is record
 ARREADY : std_logic; 		-- ARREADY Slave Indicates that a transfer on the read address channel can be accepted.
 							-- See Channel handshake signals on page A3-42.
 end record;
@@ -285,11 +308,11 @@ type rAxi4LiteRDataMiSo is record
 
 RDATA : std_logic_vector;	-- RDATA Slave Read data.
 							-- See Read data channel on page A3-43.
-RRESP : std_logic_vector;	-- RRESP Slave Read response, indicates the status of a read transfer.
+RRESP : std_logic_vector(1 downto 0);	-- RRESP Slave Read response, indicates the status of a read transfer.
 							-- See Read and write response structure on page A3-59.
 RVALID : std_logic;			-- RVALID Slave Indicates that the read data channel signals are valid.
 							-- See Channel handshake signals on page A3-42.
---OPTIONAL : rAxi4LiteRDataMiSoOpt;
+ROPTIONAL : rAxi4LiteRDataMiSoOpt;
 end record;
 
 type rAxi4LiteMoSi is record

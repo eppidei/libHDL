@@ -17,14 +17,15 @@ package FabricBus is
         Srst       : std_logic;
         Ena        : std_logic;
         WriteEna   : std_logic;
-   --     ByteEna    : std_logic_vector;
+        Strobe     : std_logic_vector;
         Address    : std_logic_vector;
         Data       : std_logic_vector;
     end record rLocalMemIn;
     
     type rFFDataStream is record 
-        Data        : std_logic_vector;        
-        WriteEna   : std_logic;
+        Data        : std_logic_vector;
+		Strobe      : std_logic_vector;
+        WriteEna    : std_logic;
     end record rFFDataStream;
     
     type arFFDataStream is array (natural range <>) of rFFDataStream;
