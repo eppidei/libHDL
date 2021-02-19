@@ -9,12 +9,12 @@ use work.Utilities.all;
 
 entity eAPBFFArray is
 generic (
-    gRegSpaceDepth        : integer;
-    gRegWidth             : integer;
-    gRegMemAlignment      : integer;
-	gAPBWDATAWidth        : integer;
-	gAPBRDATAWidth        : integer;
-	gAPBADDRWidth         : integer
+    gRegSpaceDepth        : natural;
+    gRegWidth             : natural;
+    gRegMemAlignment      : natural;
+	gAPBWDATAWidth        : natural;
+	gAPBRDATAWidth        : natural;
+	gAPBADDRWidth         : natural
 );
 port (
     --APB

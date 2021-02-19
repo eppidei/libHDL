@@ -5,6 +5,12 @@ use ieee.std_logic_1164.all;
 
 package Axi4 is
 
+constant cAXIRESP_OKAY 	 : std_logic_vector(1 downto 0):="00";
+constant cAXIRESP_EXOKAY : std_logic_vector(1 downto 0):="01";
+constant cAXIRESP_SLVERR : std_logic_vector(1 downto 0):="10";
+constant cAXIRESP_DECERR : std_logic_vector(1 downto 0):="11";
+
+
 type rGlobalAxi4 is record
     ACLK        : std_logic; -- ACLK Clock source The global clock signal. All signals are sampled on the rising
 							 -- edge of ACLK.
@@ -290,7 +296,7 @@ type rAxi4LiteRAddrMiSo is record
 ARREADY : std_logic; 		-- ARREADY Slave Indicates that a transfer on the read address channel can be accepted.
 							-- See Channel handshake signals on page A3-42.
 end record;
-
+---------------------------- READ DATA CHANNEL --------------------------------
 type rAxi4LiteRDataMoSi is record
 RREADY : std_logic;			-- RREADY Master Indicates that a transfer on the read data channel can be accepted.
 							-- See Channel handshake signals on page A3-42.

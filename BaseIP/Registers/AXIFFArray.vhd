@@ -10,11 +10,11 @@ use work.Utilities.all;
 
 entity eAXIFFArray is
 generic (
-    gRegSpaceDepth    : integer;
-    gRegWidth         : integer;
-    gRegMemAlignment  : integer;
-	gAXI_ADDRWidth 	  : integer;
-	gAXI_DATAWidth 	  : integer
+    gRegSpaceDepth    : natural;
+    gRegWidth         : natural;
+    gRegMemAlignment  : natural;
+	gAXI_ADDRWidth 	  : natural;
+	gAXI_DATAWidth 	  : natural
 );
 port (
     --APB

@@ -7,7 +7,7 @@ use work.Constants.all;
 
 entity eCounterFixedValue is
 generic (
-gCountVal 		: integer ;
+gCountVal 		: natural ;
 gImplementation : string
 );
 port (
@@ -16,9 +16,9 @@ iValid          : in std_logic;
 oCountVal       : out std_logic_vector(fNextPow2(gCountVal)-1 downto 0);
 oCountTick      : out std_logic
 );
-end entity eCounter;
+end entity eCounterFixedValue;
 
-architecture aBehavioural of eCounter is
+architecture aBehavioural of eCounterFixedValue is
 signal suCountSR  			: unsigned(gCountVal downto 0);
 signal suCount  			: unsigned(oCountVal'range);
 begin

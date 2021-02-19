@@ -10,6 +10,8 @@ package FabricBus is
         ClkEn      : std_logic;
         Srst       : std_logic;
         Srstn      : std_logic;
+		Arst       : std_logic;
+		Arstn      : std_logic;
     end record rGlobalFab;
     
     type rLocalMemIn is record
