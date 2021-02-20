@@ -28,23 +28,29 @@ genTinyCount : if gImplementation="SR" generate
 oCountTick <= suCountSR(suCountSR'left);
 oCountVal  <= fOneHot2Binary(std_logic_vector(suCountSR),suCountSR'length);
 
-	pCountSR : process(iGlobalFab.Clk)
+	pCountSR : process(iGlobalFab.Clk,iGlobalFab.Arst,iGlobalFab.Arstn)
 	begin
-	if iGlobalFab.Srst = cHIGH then
+	if iGlobalFab.Arst=cHIGH then
 		suCountSR	<= to_unsigned(1,suCountSR'length);
-	elsif iGlobalFab.Srstn = cHIGHN then
+	elsif iGlobalFab.Arstn=cHIGH then
 		suCountSR	<= to_unsigned(1,suCountSR'length);
 	elsif rising_edge(iGlobalFab.Clk) then
-		if iGlobalFab.ClkEn='1' then
-			if iValid='1' then
-				for i in suCountSR'left downto 0 loop
-					if i==0 then
-						suCountSR(i) <= suCountSR(suCountSR'left);
-					else
-						suCountSR(i) <= suCountSR(i-1);
-					end if;
-				end loop;			
-			end if;		
+		if iGlobalFab.Srst = cHIGH then
+			suCountSR	<= to_unsigned(1,suCountSR'length);
+		elsif iGlobalFab.Srstn = cHIGHN then
+			suCountSR	<= to_unsigned(1,suCountSR'length);
+		else
+			if iGlobalFab.ClkEn='1' then
+				if iValid='1' then
+					for i in suCountSR'left downto 0 loop
+						if i==0 then
+							suCountSR(i) <= suCountSR(suCountSR'left);
+						else
+							suCountSR(i) <= suCountSR(i-1);
+						end if;
+					end loop;			
+				end if;		
+			end if;
 		end if;
 	end if;
 	end process pCountSR;
@@ -55,15 +61,17 @@ oCountTick <= '1' when else ;
 
 	pCountSR : process(iGlobalFab.Clk)
 	begin
-	if iGlobalFab.Srst = cHIGH then
-		suCount	<= to_unsigned(0,suCount'length);
-	elsif iGlobalFab.Srstn = cHIGHN then
-		suCount	<= to_unsigned(0,suCount'length);
-	elsif rising_edge(iGlobalFab.Clk) then
-		if iGlobalFab.ClkEn='1' then
-			if iValid='1' then
-					suCount	<= suCount + to_unsigned(1,suCount'length);
-			end if;		
+	if rising_edge(iGlobalFab.Clk) then
+		if iGlobalFab.Srst = cHIGH then
+			suCount	<= to_unsigned(0,suCount'length);
+		elsif iGlobalFab.Srstn = cHIGHN then
+			suCount	<= to_unsigned(0,suCount'length);
+		else
+			if iGlobalFab.ClkEn='1' then
+				if iValid='1' then
+						suCount	<= suCount + to_unsigned(1,suCount'length);
+				end if;		
+			end if;
 		end if;
 	end if;
 	end process pCountSR;

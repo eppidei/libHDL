@@ -5,14 +5,18 @@ package body FabricBus is
 
 procedure procConnectGlobalFab ( signal oGlobalFab  : out rGlobalFab;
                                  signal iClock      : in std_logic; 
-                                 signal iClockEna   : in std_logic; 
-                                 signal iSreset     : in std_logic;
-                                 signal iSresetn    : in std_logic)  is
+                                 signal iClockEna   : in std_logic;
+								 signal iSreset     : in std_logic;
+                                 signal iSresetn    : in std_logic;								 
+                                 signal iAreset     : in std_logic;
+                                 signal iAresetn    : in std_logic)  is
 begin
 oGlobalFab.Clk     <= iClock;
 oGlobalFab.Srstn   <= iSresetn;
 oGlobalFab.Srst    <= iSreset;
 oGlobalFab.ClkEn   <= iClockEna;
+oGlobalFab.Srstn   <= iAresetn;
+oGlobalFab.Srst    <= iAreset;
 end procedure;
 
 procedure procConnectLocalMemIn( signal oLocalMemIn  : out rLocalMemIn;

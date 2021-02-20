@@ -33,21 +33,23 @@ lab_output : oShift <= iShift when iLatency=0 else saShiftRegister(iLatency-1);
 
 pSR : process(iGlobalFab.Clk)
 begin
-if iGlobalFab.Srst = cHIGH then
-	saShiftRegister	<= (others=> (others=>'0'));
-elsif iGlobalFab.Srstn = cHIGHN then
-	saShiftRegister	<= (others=> (others=>'0'));
-elsif rising_edge(iGlobalFab.Clk) then
-	if iGlobalFab.ClkEn='1' then
-		if iValid='1' then
-			for i in saShiftRegister'high downto saShiftRegister'low loop
-				if i==saShiftRegister'low then
-					saShiftRegister(i) <= iShift;
-				else
-					saShiftRegister(i) <= saShiftRegister(i-1);
-				end if;
-			end loop;			
-		end if;		
+if rising_edge(iGlobalFab.Clk) then
+	if iGlobalFab.Srst = cHIGH then
+		saShiftRegister	<= (others=> (others=>'0'));
+	elsif iGlobalFab.Srstn = cHIGHN then
+		saShiftRegister	<= (others=> (others=>'0'));
+	else
+		if iGlobalFab.ClkEn='1' then
+			if iValid='1' then
+				for i in saShiftRegister'high downto saShiftRegister'low loop
+					if i==saShiftRegister'low then
+						saShiftRegister(i) <= iShift;
+					else
+						saShiftRegister(i) <= saShiftRegister(i-1);
+					end if;
+				end loop;			
+			end if;		
+		end if;
 	end if;
 end if;
 end process pSR;

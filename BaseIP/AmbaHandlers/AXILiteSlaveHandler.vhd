@@ -45,8 +45,11 @@ port (
 											 )
 									);
     -- Register Local IF
+	oWData		  : out std_logic_vector(gAXI_DATAWidth-1 downto 0);
+	oRdData       : out std_logic_vector(gAXI_DATAWidth-1 downto 0);
     oWrAddress    : out std_logic_vector(gAXI_ADDRWidth-1 downto 0);
     oRdAddress    : out std_logic_vector(gAXI_ADDRWidth-1 downto 0);
+	oWrStrobe     : out std_logic_vector(gAXI_DATAWidth/cBYTELEN-1 downto 0);
 	oWEna         : out std_logic
 );
 end eAXILiteSlaveHandler;
@@ -54,21 +57,70 @@ end eAXILiteSlaveHandler;
 --throughput limited version address and data phases tighted together
 architecture aArea of eAXILiteSlaveHandler is
 
-signal svAddress 	: std_logic_vector(oAddress'range);
+
 --Counter signals
-signal sGlobalFab   : rGlobalFab;
-signal sCountValid	: std_logic;
-signal sRstCount    : std_logic;
-signal sCountTick	: std_logic;
-signal sCountValid	: std_logic;
+signal sGlobalFab  		 : rGlobalFab;
+signal sCountValid		 : std_logic;
+signal sRstCount   		 : std_logic;
+signal sCountTick		 : std_logic;
+signal sCountValid		 : std_logic;
+signal sCLK_ENABLED 	 : std_logic := cHIGH;
+signal sSRSTN_DISABLED 	 : std_logic := cLOWN;
+signal sARST_DISABLED 	 : std_logic := cLOW;
+--Read SM
+type RdChState is (RD_SETUP_ST,RD_LATENCY_ST,RD_ACCESS_ST);
+signal stREADCH 		 : RdChState;
+signal svRdAddress 	 	 : std_logic_vector(oAddress'range);
+--Write SM
+type WrChState is (WR_SETUP_ST,WR_ACCESS_ST);
+signal stWRITECH : WrChState;
+signal svWrAddress 	 	 : std_logic_vector(oAddress'range);
+--signal sWrEna 			 : std_logic;
 
 begin
+---------------------------------------------------------------
+------------------- WRITE CHANNELS ----------------------------
+---------------------------------------------------------------
 
-procConnectGlobalFab ( sGlobalFab,
-					 iGlobalAXI.ACLK, 
-					 signal iClockEna   : in std_logic; 
-					 signal iSreset     : in std_logic;
-					 signal iSresetn    : in std_logic);
+oWData	   			  <= iS_AXI.WrDataCh.WDATA;
+oWrAddress 			  <= svWrAddress;
+oWEna      			  <= iS_AXI.WrAddrCh.WVALID = cHIGH and oS_AXI.WrAddrCh.WREADY;
+oS_AXI.WDataCh.RRESP  <= cAXIRESP_OKAY;
+
+pWRITE : process(iGlobalAXI.ACLK,iGlobalAXI.ARESETn)
+begin
+if (iGlobalAXI.ARESETn=HIGHN) then
+	oS_AXI.WrAddrCh.AWREADY <= cHIGH;
+	oS_AXI.WrAddrCh.WREADY 	<= cLOW;
+	svWrAddress				<= (others=>cLOW);
+elsif rising_edge(iGlobalAXI.ACLK) then
+	case stWRITECH is
+		when WR_SETUP_ST	=>  stWRITECH <= WR_SETUP_ST;
+								if iS_AXI.WrAddrCh.AWVALID = cHIGH then
+									svWrAddress	 			<= iS_AXI.WrAddrCh.AWADDR;
+									oS_AXI.WrAddrCh.AWREADY <= cLOW;
+									oS_AXI.WrAddrCh.WREADY 	<= cHIGH;
+								end if;
+		when WR_ACCESS_ST 	=>  stWRITECH <= WR_ACCESS_ST;
+								if iS_AXI.WrAddrCh.WVALID = cHIGH then
+									oS_AXI.WrAddrCh.WREADY 	<= cLOW;
+									stWRITECH 				<= WR_SETUP_ST;
+								end if;
+
+	end case;
+end if;
+end process pWRITE;
+---------------------------------------------------------------
+------------------- READ CHANNELS -----------------------------
+---------------------------------------------------------------
+
+lab_LatCntGlobConnect : procConnectGlobalFab ( sGlobalFab,
+											   iGlobalAXI.ACLK, 
+											   sCLKENABLED, 
+											   sRstCount,
+											   sSRSTN_DISABLED,
+											   sARST_DISABLED,
+											   iGlobalAXI.ARESETN);
 
 iLatencyCount : work.eCounterFixedValue
 generic map(
@@ -82,46 +134,49 @@ oCountVal       => open,
 oCountTick      => sCountTick 
 );
 
-oS_AXI.RDataCh.RVALID <= cHIGH when RdState=RD_ACCESS_ST and iS_AXI.RdDataCh.RREADY = cHIGH
-						 else cLOW;
+--oS_AXI.RDataCh.RVALID <= cHIGH when stREADCH=RD_ACCESS_ST and iS_AXI.RdDataCh.RREADY = cHIGH
+--						 else cLOW;
 oS_AXI.RDataCh.RRESP  <= cAXIRESP_OKAY;
 
 pREAD : process(iGlobalAXI.ACLK,iGlobalAXI.ARESETn)
 begin
 if (iGlobalAXI.ARESETn=HIGHN) then
 	oS_AXI.RdAddrCh.ARREADY <= cHIGH;
-	svAddress				<= (others=>cLOW);
-	RdState 				<= RD_SETUP_ST;
+	oS_AXI.RDataCh.RVALID   <= cLOW;
+	svRdAddress				<= (others=>cLOW);
+	stREADCH 				<= RD_SETUP_ST;
 	oS_AXI.RdAddrCh.AR 		<= cHIGH;
 	sCountValid             <= cLOW;
 	sCountTick				<= cLOW;
 	sRstCount               <= cLOW;
 elsif rising_edge(iGlobalAXI.ACLK) then
-	case RdState is
-		when RD_SETUP_ST	=>  RdState 	 <= RD_SETUP_ST;
-								sCountValid  <= cLOW;
-								sRstCount    <= cLOW;
+	case stREADCH is
+		when RD_SETUP_ST	=>  stREADCH 	 			<= RD_SETUP_ST;
+								sCountValid  			<= cLOW;
+								sRstCount    			<= cLOW;
+								oS_AXI.RDataCh.RVALID	<= cLOW;
 								if iS_AXI.RdAddrCh.ARVALID=cHIGH then
 									oS_AXI.RdAddrCh.ARREADY <= cLOW;
-									RdState 				<= RD_LATENCY_ST;
-									svAddress				<= iS_AXI.RdAddrCh.ARADDR;
+									stREADCH 				<= RD_LATENCY_ST;
+									svRdAddress				<= iS_AXI.RdAddrCh.ARADDR;
 									assert (iS_AXI.RAddrCh.ARPROT="000") report "ignoring read access permissions" severity warning;
 									sCountValid  			<= cHIGH;
 								end if;
-		when RD_LATENCY_ST	=>  RdState 	 <= RD_LATENCY_ST;
+		when RD_LATENCY_ST	=>  stREADCH 	 <= RD_LATENCY_ST;
 								if sCountTick=cHIGH then
-									sCountValid <= cLOW;
-									sRstCount   <= cHIGH;
+									sCountValid 			<= cLOW;
+									sRstCount   			<= cHIGH;
+									oS_AXI.RDataCh.RVALID	<= cHIGH;
 								end if;
-		when RD_ACCESS_ST 	=>  RdState 	<= RD_ACCESS_ST;
+		when RD_ACCESS_ST 	=>  stREADCH 	<= RD_ACCESS_ST;
 								sRstCount   <= cLOW;
 								if iS_AXI.RdDataCh.RREADY = cHIGH then
-									RdState 	<= RD_SETUP_ST;
+									stREADCH 	<= RD_SETUP_ST;
+									oS_AXI.RDataCh.RVALID	<= cLOW;
 								end if;
+		when others 		=>  null;
 	end case;
 end if;
 end process pREAD;
-
-
-
+ 
 end architecture aArea;

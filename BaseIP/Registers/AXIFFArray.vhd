@@ -31,7 +31,7 @@ port (
 end eAXIFFArray;
 
 architecture aMixed of eAPBFFArray is
-
+constant cMAXBIT_ADDRESSABLE32 : integer := fNextPow2(gRegSpaceDepth-1);
 --Connecting signals
 signal sGlobalFabFF  		: rGlobalFab;
 signal sarFFArrayIn  		: arFFDataStream(0 to gRegSpaceDepth-1)(Data(gRegWidth-1 downto 0)); 
@@ -43,12 +43,64 @@ signal sSrstInactive        : std_logic := cLOW;
 signal sRVALID 				: std_logic;
 signal sARREADY 			: std_logic;
 
+signal sRdAddress           : std_logic_vector(gAXI_DATAWidth-1 downto 0);
+signal sWrAddress           : std_logic_vector(gAXI_DATAWidth-1 downto 0);
+signal sWena 				: std_logic;
+
+signal siIdxW         		: integer range 0 to gRegSpaceDepth-1:= 0;
+signal siIdxR         		: integer range 0 to gRegSpaceDepth-1:= 0;
+
 begin
 proc_GlobFabMemR : procConnectGlobalFab (sGlobalFabFF,
                                          iGlobalAXI.PCLK,
                                          sClkEn_AlwaysEnable,
                                          sSrstInactive,
                                          iGlobalAXI.PRESETN);
+
+iAXILiteHandler : entity work.eAXILiteSlaveHandler
+generic map(
+	gSlaveReadLatency   => 1,
+	gAXI_ADDRWidth 	    => gAXI_ADDRWidth ,
+	gAXI_DATAWidth 	    => gAXI_DATAWidth
+	-- gAXI_WAddrIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_WDataIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_WRespIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_RAddrIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_RDataIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_WAddrUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_WDataUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_WRespUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_RAddrUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	-- gAXI_RDataUSERWidht : natural:=1  --opt. fields set by default to 1 if not used
+)
+port map(
+    --APB
+    iGlobalAXI  => iGlobalAXI,
+    iS_AXI      => iS_AXI,
+    oS_AXI      => oS_AXI,
+    -- Register Local IF
+	oWData		=> ,
+	oRdData     => ,
+    oWrAddress  => sWrAddress,
+    oRdAddress  => sRdAddress,
+	oWEna       => sWena
+);
+
+gem_MemAlignment : if (gRegMemAlignment=32) generate
+
+siIdxW <= to_integer(unsigned(iS_AXI.WAddrCh.AWADDR(cMAXBIT_ADDRESSABLE32+2-1 downto 2)));
+assert (cMAXBIT_ADDRESSABLE32+2-1<iS_AXI.WAddrCh.AWADDR'length) report "Register space to high for being addresses" severity error;
+assert siIdxW<gRegSpaceDepth report "Address " & to_hstring(iS_AXI.WAddrCh.AWADDR) & " is out of range" severity error;
+
+siIdxR <= to_integer(unsigned(iS_AXI.RAddrCh.ARADDR(cMAXBIT_ADDRESSABLE32+2-1 downto 2)));
+assert (cMAXBIT_ADDRESSABLE32+2-1<iS_AXI.RAddrCh.ARADDR'length) report "Register space to high for being addresses" severity error;
+assert siIdxR<gRegSpaceDepth report "Address " & to_hstring(iS_AXI.RAddrCh.ARADDR) & " is out of range" severity error;
+
+else generate
+
+assert gRegMemAlignment=32 report "Register are not aligned on 32bit" severity ERROR;
+
+end generate gem_MemAlignment;
 
 ----------------------------
 ------ Registers -----------
@@ -64,10 +116,5 @@ port map(
     iFFArrayIn      => sarFFArrayIn,
     oFFArrayOut     => saFFOut
 );
-
-sARREADY <= (not sRVALID) ot ;
-
-
-
 
 end architecture aMixed;
