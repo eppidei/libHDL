@@ -1,3 +1,6 @@
+library ieee;
+use ieee.numeric_std.all;
+
 package body Utilities is
 
 function fNextpow2(a:in integer) return integer is	
@@ -12,12 +15,12 @@ begin
 	elsif a=1 then
 		b:=1;
 	else
-	   assert false report " Value " & a'image & "is not supported in nextpow2 function " & LF & CR &
+	   assert false report " Value " & integer'image(a) & "is not supported in nextpow2 function " & LF & CR &
 		" if the Value is 0 we are returning 1 in order to not create negative length vectors " & LF & CR &
 		" Please double check if this choice does not harm the design !!!!!!!!!!!!!!!"
 	   severity warning;
 	   if a=0 then 
-		b:=1 
+		b:=1; 
 	   end if;
 	end if;	   
 return b;	   

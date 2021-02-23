@@ -4,6 +4,7 @@ use ieee.numeric_std.all;
 
 use work.Utilities.all;
 use work.Constants.all;
+use work.FabricBus.all;
 
 entity eCounterFixedValue is
 generic (
@@ -43,7 +44,7 @@ oCountVal  <= fOneHot2Binary(std_logic_vector(suCountSR),suCountSR'length);
 			if iGlobalFab.ClkEn='1' then
 				if iValid='1' then
 					for i in suCountSR'left downto 0 loop
-						if i==0 then
+						if i=0 then
 							suCountSR(i) <= suCountSR(suCountSR'left);
 						else
 							suCountSR(i) <= suCountSR(i-1);
@@ -55,9 +56,10 @@ oCountVal  <= fOneHot2Binary(std_logic_vector(suCountSR),suCountSR'length);
 	end if;
 	end process pCountSR;
 
-else
+else generate
 
-oCountTick <= '1' when else ;
+oCountTick 	<= '1' when std_logic_vector(suCount)=(suCount'range=>'1') else '0';
+oCountVal	<= std_logic_vector(suCount);
 
 	pCountSR : process(iGlobalFab.Clk)
 	begin
