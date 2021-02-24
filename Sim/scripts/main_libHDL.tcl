@@ -38,14 +38,11 @@ $LIBHDL_PKGS/Protocols/FabricBus_Bpkg.vhd"
 
 set LibHdlBaseIP "
 $LIBHDL_BASEIP/Counters/Counter.vhd 
+$LIBHDL_BASEIP/Registers/FFs/FFRegisters.vhd 
 $LIBHDL_BASEIP/Registers/APB/APBFFArray.vhd 
 $LIBHDL_BASEIP/Registers/AXI/AXIFFArray.vhd 
-$LIBHDL_BASEIP/Registers/FFs/FFRegisters.vhd 
 $LIBHDL_BASEIP/ShiftRegisters/ShiftRegisterFixedLength.vhd 
 $LIBHDL_BASEIP/AmbaHandlers/AXILiteSlaveHandler.vhd"
-
-
-
 
 }
 

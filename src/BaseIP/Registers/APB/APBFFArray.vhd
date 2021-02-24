@@ -12,9 +12,9 @@ generic (
     gRegSpaceDepth        : natural;
     gRegWidth             : natural;
     gRegMemAlignment      : natural;
-	gAPBWDATAWidth        : natural;
-	gAPBRDATAWidth        : natural;
-	gAPBADDRWidth         : natural
+    gAPBWDATAWidth        : natural;
+    gAPBRDATAWidth        : natural;
+    gAPBADDRWidth         : natural
 );
 port (
     --APB
@@ -33,21 +33,23 @@ architecture aMixed of eAPBFFArray is
 constant cMAXBIT_ADDRESSABLE32 : integer := fNextPow2(gRegSpaceDepth-1);
 --APB local signals
 type tAPBSTATE is (SETUP_ST,ACCESS_ST);
-signal stAPB 				: tAPBSTATE;
+signal stAPB                : tAPBSTATE;
 
-signal sWriteEnaApb      	: std_logic; -- write enable condition
-signal sPeripheralSelEna 	: std_logic;
+signal sWriteEnaApb         : std_logic; -- write enable condition
+signal sPeripheralSelEna    : std_logic;
 
 --Connecting signals
-signal sGlobalFabFF  		: rGlobalFab;
-signal sarFFArrayIn  		: arFFDataStream(0 to gRegSpaceDepth-1)(Data(gRegWidth-1 downto 0)); 
-signal saFFOut       		: aFFRegisters(0 to gRegSpaceDepth-1)(gRegWidth-1 downto 0);
+signal sGlobalFabFF         : rGlobalFab;
+signal sarFFArrayIn         : arFFDataStream(0 to gRegSpaceDepth-1)(Data(gRegWidth-1 downto 0),
+                                                                    Strobe(gRegWidth/cBYTELEN-1 downto 0)); 
+signal saFFOut              : aFFRegisters(0 to gRegSpaceDepth-1)(gRegWidth-1 downto 0);
 -- memory indexing
-signal siIdx         		: integer range 0 to gRegSpaceDepth-1:= 0;--initialized for preventing simulator time 0 errors
+signal siIdx                : integer range 0 to gRegSpaceDepth-1:= 0;--initialized for preventing simulator time 0 errors
 
 signal sClkEn_AlwaysEnable  : std_logic := cHIGH;
 signal sSrstInactive        : std_logic := cLOW;
-
+signal sArstInactive        : std_logic := cLOW;
+signal sSrstnInactive       : std_logic := cLOWN;
 begin
 -------------------------------
 ------ Input Checks  --------
@@ -57,20 +59,22 @@ assert gRegWidth<=gAPBWDATAWidth report "Address " & to_hstring(iS_APB.PADDR) & 
 ------ Out Assignemnt  --------
 -------------------------------
 lab_OutAPB  : oS_APB.PRDATA       <= saFFOut(siIdx);
-lab_PLSVERR : oS_APB.PSLVERR      <='0';
+lab_PLSVERR : oS_APB.PSLVERR      <= cLOW;
 ------------------------------
 ------ Internal Assignemnt  --
 -------------------------------
-lab_PERENA  	 : sPeripheralSelEna 	<= iS_APB.PENABLE and iS_APB.PSELx;
-lab_WENA    	 : sWriteEnaApb      	<= sPeripheralSelEna and iS_APB.PWRITE;
+lab_PERENA       : sPeripheralSelEna    <= iS_APB.PENABLE and iS_APB.PSELx;
+lab_WENA         : sWriteEnaApb         <= sPeripheralSelEna and iS_APB.PWRITE;
 proc_GlobFabMemR : procConnectGlobalFab (sGlobalFabFF,
                                          iGlobalAPB.PCLK,
                                          sClkEn_AlwaysEnable,
                                          sSrstInactive,
+                                         sSrstnInactive,
+                                         sArstInactive,
                                          iGlobalAPB.PRESETN);
-		----------------------------
-		------ Mux Select   --------
-		----------------------------
+        ----------------------------
+        ------ Mux Select   --------
+        ----------------------------
 
 gem_MemAlignment : if (gRegMemAlignment=32) generate
 
@@ -83,21 +87,21 @@ assert gRegMemAlignment=32 report "Register are not aligned on 32bit" severity E
 
 end generate gem_MemAlignment;
 
-		----------------------------
-		------ In Out Muxes --------
-		----------------------------
+        ----------------------------
+        ------ In Out Muxes --------
+        ----------------------------
 
 gen_muxin : for MuxIdx in 0 to gRegSpaceDepth-1 generate
 
-sarFFArrayIn(MuxIdx).Data     <= iS_APB.PWDATA when (MuxIdx=siIdx and sWriteEnaApb='1')  else iFFArrayIn(MuxIdx).Data;
+sarFFArrayIn(MuxIdx).Data     <= iS_APB.PWDATA(gRegWidth-1 downto 0) when (MuxIdx=siIdx and sWriteEnaApb='1')  else iFFArrayIn(MuxIdx).Data;
 sarFFArrayIn(MuxIdx).WriteEna <= sWriteEnaApb when MuxIdx=siIdx  else iFFArrayIn(MuxIdx).WriteEna; 
-
+sarFFArrayIn(MuxIdx).Strobe   <= iS_APB.PSTRB;
 end generate gen_muxin;
 
 gen_muxout : for MuxIdx in 0 to gRegSpaceDepth-1 generate
 
 oFFArrayOut(MuxIdx).Data     <= saFFOut(MuxIdx);
-oFFArrayOut(MuxIdx).WriteEna <= sWriteEnaApb when MuxIdx=siIdx else '0'; --just redirect APB access in case needs to be handled
+oFFArrayOut(MuxIdx).WriteEna <= sWriteEnaApb when MuxIdx=siIdx else cLOW; --just redirect APB access in case needs to be handled
 
 end generate gen_muxout;
 
@@ -107,8 +111,9 @@ end generate gen_muxout;
 
 Inst_FFRegisters : entity work.eFFRegisters
 generic map(
-    gRegSpaceDepth  => gRegSpaceDepth,
-    gRegWidth       => gRegWidth
+    gRegSpaceDepth   => gRegSpaceDepth,
+    gRegWidth        => gRegWidth,
+    gIsStrobeEnabled => TRUE
     )
 port map(
     iGlobalFab      => sGlobalFabFF,
@@ -124,19 +129,19 @@ pSM : process(iGlobalAPB.PCLK)
       begin
       if rising_edge(iGlobalAPB.PCLK) then
           if iGlobalAPB.PRESETn=cHIGHN then
-            stAPB       	<= SETUP_ST;
-            oS_APB.PREADY 	<= '1';
+            stAPB           <= SETUP_ST;
+            oS_APB.PREADY   <= '1';
           else
             case stAPB is
-                when SETUP_ST  => oS_APB.PREADY 	<= '1';
-                                  stAPB       		<= SETUP_ST;
-                                  if iS_APB.PSELx='1' then
-									  oS_APB.PREADY 	<= '1';
-									  stAPB       		<= ACCESS_ST;
+                when SETUP_ST  => oS_APB.PREADY     <= cHIGH;
+                                  stAPB             <= SETUP_ST;
+                                  if iS_APB.PSELx=cHIGH then
+                                      oS_APB.PREADY     <= cHIGH;
+                                      stAPB             <= ACCESS_ST;
                                   end if;
-                when ACCESS_ST => if iS_APB.PENABLE='1' then
-									oS_APB.PREADY 	<= '0'; 
-									stAPB       	<= SETUP_ST;
+                when ACCESS_ST => if iS_APB.PENABLE=cHIGH then
+                                    oS_APB.PREADY   <= cLOW; 
+                                    stAPB           <= SETUP_ST;
                                   end if;
             end case;
           end if;
