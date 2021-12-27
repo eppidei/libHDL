@@ -21,7 +21,8 @@ end entity eApb2AxiLiteBridge;
 
 architecture aBehavioral of eApb2AxiLiteBridge is
 
-type StateT is (IDLE,WADDRESS,RADDRESS,WDATA,WDATA,RDATA);
+type StateT is (IDLE,WADDRESS,RADDRESS,WDATA,RDATA);
+signal sState : StateT;
 
 begin
 
@@ -32,11 +33,11 @@ oAxiLite.RAddrCh.ARADDR <= iApb.PADDR ;--and not(iApb.PWRITE);
 oAxiLite.RAddrCh.ARPROT <= iApb.PPROT ;--and not(iApb.PWRITE);
 oAxiLite.WDataCh.WVALID <= iApb.PENABLE when sState=WDATA else cLOW;--and not(iApb.PWRITE);
 oAxiLite.WDataCh.WSTRB  <= iApb.PSTRB ;-- when sState=WDATA else (oAxiLite.WDataCh.WSTRB´range=>'0');--and not(iApb.PWRITE);
-oAxiLite.WDataCh.WDATA  <= iApb.PWDATA ;_--when sState=WDATA else (oAxiLite.WDataCh.WDATA´range=>'0');--and not(iApb.PWRITE);
+oAxiLite.WDataCh.WDATA  <= iApb.PWDATA ;--when sState=WDATA else (oAxiLite.WDataCh.WDATA´range=>'0');--and not(iApb.PWRITE);
 oAxiLite.WRespCh.BREADY <= '1';--and not(iApb.PWRITE);
 
-oApb.PSLVERR            <= cHIGH when iAxiLite.WRespCh.BVALID='1' and iAxiLite.WRespCh.BRESP=/"00" else
-                            cHIGH when iAxiLite.RDataCh.RVALID='1' and iAxiLite.RDataCh.RRESP=/"00" else
+oApb.PSLVERR            <= cHIGH when iAxiLite.WRespCh.BVALID='1' and iAxiLite.WRespCh.BRESP/="00" else
+                            cHIGH when iAxiLite.RDataCh.RVALID='1' and iAxiLite.RDataCh.RRESP/="00" else
                             cLOW;
 oApb.PREADY             <= iAxiLite.WDataCh.WREADY when sState=WDATA else
                             iAxiLite.RDataCh.RVALID when (sState=RDATA and iApb.PENABLE=cHIGH) else
@@ -46,7 +47,7 @@ oApb.PRDATA             <= iAxiLite.RDataCh.RDATA;
 pFSM : process(iGlobal.PCLK)
 begin
 if rising_edge(iGlobal.PCLK) then
-    if (iGlobal.PRESETn=cLOW)
+    if (iGlobal.PRESETn=cLOW) then
         sState                   <= IDLE;
         oAxiLite.WAddrCh.AWVALID <= cLOW;
         oAxiLite.RAddrCh.ARVALID <= cLOW;
@@ -76,7 +77,7 @@ if rising_edge(iGlobal.PCLK) then
         when RADDRESS => sState <= RDATA;
                          oAxiLite.RAddrCh.ARVALID <= cHIGH;
                          oAxiLite.RDataCh.RREADY <= cLOW;  
-                         if iAxiLite.WAddrCh.ARREADY=cHIGH then
+                         if iAxiLite.RAddrCh.ARREADY=cHIGH then
                             oAxiLite.RAddrCh.ARVALID <= cLOW;
                             oAxiLite.RDataCh.RREADY <= cHIGH;   
                             sState <= RDATA;
@@ -95,6 +96,8 @@ if rising_edge(iGlobal.PCLK) then
 
         end case ;
     end if;
+end if;
+end process;
 
 end aBehavioral;
 
