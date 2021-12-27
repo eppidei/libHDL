@@ -4,7 +4,8 @@ use ieee.std_logic_1164.all;
 package FabricBus is
 --type definitions
     type aFFRegisters is array (natural range <>) of std_logic_vector;
-    
+    type aIntegers is array (natural range <>) of integer;
+
     type rGlobalFab is record
         Clk        : std_logic;
         ClkEn      : std_logic;
@@ -26,7 +27,7 @@ package FabricBus is
     
     type rFFDataStream is record 
         Data        : std_logic_vector;
-		Strobe      : std_logic_vector;
+        Strobe      : std_logic_vector;
         WriteEna    : std_logic;
     end record rFFDataStream;
     
@@ -43,7 +44,7 @@ procedure procConnectGlobalFab ( signal oGlobalFab : out rGlobalFab;
                                  signal iClockEna   : in std_logic; 
                                  signal iSreset     : in std_logic;
                                  signal iSresetn    : in std_logic;
-								 signal iAreset     : in std_logic;
+                                 signal iAreset     : in std_logic;
                                  signal iAresetn    : in std_logic);
 procedure procConnectLocalMemIn( signal oLocalMemIn : out rLocalMemIn;
                                  signal Clk          : in std_logic; 
@@ -52,6 +53,8 @@ procedure procConnectLocalMemIn( signal oLocalMemIn : out rLocalMemIn;
                                  signal WriteEna     : in std_logic;
                                  signal Address      : in std_logic_vector;
                                  signal Data         : in std_logic_vector); 
+procedure procDefineRegWidths(signal oRegArray     : out aFFRegisters,
+                              constant aIntegers   : in aIntegers);
     
 end package FabricBus;
 
