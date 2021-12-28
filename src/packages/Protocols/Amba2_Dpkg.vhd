@@ -43,19 +43,19 @@ procedure procConnectGlobalAPB ( signal oGlobalAPB   : out rGlobalAPB;
                                  signal iClock        : in std_logic; 
                                  signal iResetn       : in std_logic); 
 
-procedure procConnectSlaveAPBMiSo ( signal APBMiSo   : out rAPBMiSo;
-                                    signal PREADY    : in std_logic;       
-                                    signal PRDATA    : in std_logic_vector;           
-                                    signal PSLVERR   : in std_logic   );
+procedure procConnectSlaveAPBMiSo ( signal APBMiSo   : in rAPBMiSo;
+                                    signal PREADY    : out std_logic;       
+                                    signal PRDATA    : out std_logic_vector;           
+                                    signal PSLVERR   : out std_logic   );
 
-procedure procConnectSlaveAPBMoSi ( signal APBMoSi : in rAPBMoSi ;
-                                    signal PPROT   : out std_logic_vector(2 downto 0);
-                                    signal PSELx   : out std_logic;                   
-                                    signal PENABLE : out std_logic;                  
-                                    signal PWRITE  : out std_logic;                 
-                                    signal PWDATA  : out std_logic_vector;           
-                                    signal PSTRB   : out std_logic_vector;           
-                                    signal PADDR   : out std_logic_vector  );
+procedure procConnectSlaveAPBMoSi ( signal APBMoSi : out rAPBMoSi ;
+                                    signal PPROT   : in std_logic_vector(2 downto 0);
+                                    signal PSELx   : in std_logic;                   
+                                    signal PENABLE : in std_logic;                  
+                                    signal PWRITE  : in std_logic;                 
+                                    signal PWDATA  : in std_logic_vector;           
+                                    signal PSTRB   : in std_logic_vector;           
+                                    signal PADDR   : in std_logic_vector  );
 end package Amba3;
 
 

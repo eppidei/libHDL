@@ -14,16 +14,16 @@ port (
 iClk          : in std_logic;
 iResetn       : in std_logic;     
 -- APB slave   
-s_apb_pprot   : out std_logic_vector(2 downto 0);
-s_apb_pselx   : out std_logic;                    
-s_apb_penable : out std_logic;                                                        
-s_apb_pwrite  : out std_logic;                  
-s_apb_pwdata  : out std_logic_vector(gDATAWidth-1 downto 0);           
-s_apb_pstrb   : out std_logic_vector(gDATAWidth/cBYTELEN-1 downto 0);           
-s_apb_paddr   : out std_logic_vector(gADDRWidth-1 downto 0); 
-s_apb_pready  : in std_logic;                   
-s_apb_prdata  : in std_logic_vector(gDATAWidth-1 downto 0);                                                
-s_apb_pslverr : in std_logic; 
+s_apb_pprot   : in std_logic_vector(2 downto 0);
+s_apb_pselx   : in std_logic;                    
+s_apb_penable : in std_logic;                                                        
+s_apb_pwrite  : in std_logic;                  
+s_apb_pwdata  : in std_logic_vector(gDATAWidth-1 downto 0);           
+s_apb_pstrb   : in std_logic_vector(gDATAWidth/cBYTELEN-1 downto 0);           
+s_apb_paddr   : in std_logic_vector(gADDRWidth-1 downto 0); 
+s_apb_pready  : out std_logic;                   
+s_apb_prdata  : out std_logic_vector(gDATAWidth-1 downto 0);                                                
+s_apb_pslverr : out std_logic; 
 -- AXI Lite Master
 m_axi_awaddr  : out std_logic_vector(gADDRWidth-1 downto 0);	
 m_axi_awprot  : out std_logic_vector(2 downto 0);	
