@@ -24,7 +24,7 @@ AxiLiteMiSo.RDataCh.RDATA  <= m_axi_rdata   ;
 AxiLiteMiSo.RDataCh.RRESP  <= m_axi_rresp   ;
 AxiLiteMiSo.RDataCh.RVALID <= m_axi_rvalid  ;
 
-end procedure procConnectAPBMiSo;
+end procedure procConnectMaster_AXILiteMiSo;
 
 procedure procConnectSlave_AXILiteMiSo ( signal AxiLiteMiSo   : in rAxi4LiteMiSo;	
                                          signal m_axi_awready : out std_logic;	
@@ -45,7 +45,7 @@ m_axi_rdata   <= AxiLiteMiSo.RDataCh.RDATA  ;
 m_axi_rresp   <= AxiLiteMiSo.RDataCh.RRESP  ;
 m_axi_rvalid  <= AxiLiteMiSo.RDataCh.RVALID ;
 
-end procedure procConnectAPBMiSo;
+end procedure procConnectSlave_AXILiteMiSo;
 
 procedure procConnectMaster_AXILiteMoSi ( signal AxiLiteMoSi   : in rAxi4LiteMoSi;	
                                           signal m_axi_awaddr  : out std_logic_vector;	
@@ -73,7 +73,7 @@ m_axi_arprot  <=AxiLiteMoSi.RAddrCh.ARPROT ;
 m_axi_arvalid <=AxiLiteMoSi.RAddrCh.ARVALID;
 m_axi_rready  <=AxiLiteMoSi.RDataCh.RREADY ;
 
-end procedure procConnectAPBMiSo;
+end procedure procConnectMaster_AXILiteMoSi;
 
 procedure procConnectSlave_AXILiteMoSi ( signal AxiLiteMoSi    : out rAxi4LiteMoSi;	
                                           signal m_axi_awaddr  : in std_logic_vector;	
@@ -101,6 +101,6 @@ AxiLiteMoSi.RAddrCh.ARPROT <=m_axi_arprot  ;
 AxiLiteMoSi.RAddrCh.ARVALID<=m_axi_arvalid ;
 AxiLiteMoSi.RDataCh.RREADY <=m_axi_rready  ;
 
-end procedure procConnectAPBMiSo;
+end procedure procConnectSlave_AXILiteMoSi;
 
 end package body AXI4;
