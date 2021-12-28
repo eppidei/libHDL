@@ -94,6 +94,18 @@ begin
 procConnectGlobalAPB ( sGlobalAPB, 
                        iClk, 
                        iResetn);
+procConnectSlaveAPBMiSo ( sAPBMiSo,
+                                s_apb_pready    ,
+                                s_apb_prdata    ,           
+                                s_apb_pslverr   );
+procConnectSlaveAPBMoSi ( sAPBMoSi ,
+                          s_apb_pprot   ,
+                          s_apb_pselx   ,
+                          s_apb_penable ,
+                          s_apb_pwrite  ,
+                          s_apb_pwdata  ,
+                          s_apb_pstrb   ,
+                          s_apb_paddr   );
 procConnectMaster_AXILiteMiSo (  sAxiLiteMiSo,  	
                                 m_axi_awready ,	
                                 m_axi_wready  ,	

@@ -317,7 +317,7 @@ RRESP : std_logic_vector(1 downto 0);	-- RRESP Slave Read response, indicates th
 							-- See Read and write response structure on page A3-59.
 RVALID : std_logic;			-- RVALID Slave Indicates that the read data channel signals are valid.
 							-- See Channel handshake signals on page A3-42.
-ROPTIONAL : eppi;
+ROPTIONAL : rAxi4LiteRDataMiSoOpt;
 end record;
 
 type rAxi4LiteMoSi is record
