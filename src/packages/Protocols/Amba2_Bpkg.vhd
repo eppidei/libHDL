@@ -11,32 +11,32 @@ oGlobalAPB.PCLK      <= iClock;
 oGlobalAPB.PRESETN   <= iResetn;
 end procedure procConnectGlobalAPB;
 
-procedure procConnectSlaveAPBMiSo ( signal iAPBMiSo   : in rAPBMiSo;
-                               signal oPREADY    : out std_logic;       
-                               signal oPRDATA    : out std_logic_vector;           
-                               signal oPSLVERR   : out std_logic   ) is
+procedure procConnectSlaveAPBMiSo ( signal APBMiSo   : out rAPBMiSo;
+                                    signal PREADY    : in std_logic;       
+                                    signal PRDATA    : in std_logic_vector;           
+                                    signal PSLVERR   : in std_logic   ) is
 begin
-oPREADY  <= iAPBMiSo.PREADY;
-oPRDATA  <= iAPBMiSo.PRDATA;
-oPSLVERR <= iAPBMiSo.PSLVERR;
+APBMiSo.PREADY  <= PREADY  ;
+APBMiSo.PRDATA  <= PRDATA  ;
+APBMiSo.PSLVERR <= PSLVERR ;
 end procedure procConnectSlaveAPBMiSo;
     
-procedure procConnectSlaveAPBMoSi ( signal oAPBMoSi : out rAPBMoSi ;
-                               signal iPPROT   : in std_logic_vector(2 downto 0);
-                               signal iPSELx   : in std_logic;                   
-                               signal iPENABLE : in std_logic;                  
-                               signal iPWRITE  : in std_logic;                 
-                               signal iPWDATA  : in std_logic_vector;           
-                               signal iPSTRB   : in std_logic_vector;           
-                               signal iPADDR   : in std_logic_vector  ) is
+procedure procConnectSlaveAPBMoSi ( signal APBMoSi : in rAPBMoSi ;
+                                    signal PPROT   : out std_logic_vector(2 downto 0);
+                                    signal PSELx   : out std_logic;                   
+                                    signal PENABLE : out std_logic;                  
+                                    signal PWRITE  : out std_logic;                 
+                                    signal PWDATA  : out std_logic_vector;           
+                                    signal PSTRB   : out std_logic_vector;           
+                                    signal PADDR   : out std_logic_vector  ) is
 begin
-oAPBMoSi.PPROT      <= iPPROT;
-oAPBMoSi.PSELx      <= iPSELx;
-oAPBMoSi.PENABLE    <= iPENABLE;
-oAPBMoSi.PWRITE     <= iPWRITE;
-oAPBMoSi.PWDATA     <= iPWDATA;
-oAPBMoSi.PSTRB      <= iPSTRB;
-oAPBMoSi.PADDR      <= iPADDR;
+PPROT    <= APBMoSi.PPROT   ;
+PSELx    <= APBMoSi.PSELx   ;
+PENABLE  <= APBMoSi.PENABLE ;
+PWRITE   <= APBMoSi.PWRITE  ;
+PWDATA   <= APBMoSi.PWDATA  ;
+PSTRB    <= APBMoSi.PSTRB   ;
+PADDR    <= APBMoSi.PADDR   ;
 end procedure procConnectSlaveAPBMoSi;
 
 end package body Amba3;
