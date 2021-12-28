@@ -12,7 +12,8 @@ generic (
 );
 port (
 iClk          : in std_logic;
-iResetn       : in std_logic;        
+iResetn       : in std_logic;     
+-- APB slave   
 s_apb_pprot   : out std_logic_vector(2 downto 0);
 s_apb_pselx   : out std_logic;                    
 s_apb_penable : out std_logic;                                                        
@@ -23,6 +24,7 @@ s_apb_paddr   : out std_logic_vector(gADDRWidth-1 downto 0);
 s_apb_pready  : in std_logic;                   
 s_apb_prdata  : in std_logic_vector(gDATAWidth-1 downto 0);                                                
 s_apb_pslverr : in std_logic; 
+-- AXI Lite Master
 m_axi_awaddr  : out std_logic_vector(gADDRWidth-1 downto 0);	
 m_axi_awprot  : out std_logic_vector(2 downto 0);	
 m_axi_awvalid : out std_logic;		
@@ -47,19 +49,22 @@ end entity eApb2AxiLiteBridgeWrapper;
 
 architecture aRTL of eApb2AxiLiteBridgeWrapper is
 
-constant cAXI_WAddrIDWidht : natural := 1;
-constant cAXI_WDataIDWidht : natural := 1;
+constant cAXI_WAddrIDWidht   : natural := 1;
+constant cAXI_WDataIDWidht   : natural := 1;
 constant cAXI_WAddrUSERWidht : natural := 1;
 constant cAXI_WDataUSERWidht : natural := 1;
 constant cAXI_RAddrUSERWidht : natural := 1;
-constant cAXI_RAddrIDWidht : natural := 1;
+constant cAXI_RAddrIDWidht   : natural := 1;
 constant cAXI_RDataUSERWidht : natural := 1;
-constant cAXI_RDataIDWidht : natural := 1;
-constant cAXI_WRespIDWidht : natural := 1;
+constant cAXI_RDataIDWidht   : natural := 1;
+constant cAXI_WRespIDWidht   : natural := 1;
 constant cAXI_WRespUSERWidht : natural := 1;
 
 signal sGlobalAPB   : rGlobalAPB;
-signal sAxiLiteMiSo : rAxi4LiteMiSo( RDataCh ( RDATA(gDATAWidth-1 downto 0),ROPTIONAL(RID(cAXI_RDataIDWidht-1 downto 0),RUSER(cAXI_RDataUSERWidht-1 downto 0))),
+signal sAxiLiteMiSo : rAxi4LiteMiSo( RDataCh ( RDATA(gDATAWidth-1 downto 0),
+                                               ROPTIONAL(RID(cAXI_RDataIDWidht-1 downto 0),
+                                                         RUSER(cAXI_RDataUSERWidht-1 downto 0))
+                                                         ),
 									 WRespCh ( BOPTIONAL ( BID(cAXI_WRespIDWidht-1 downto 0) ,
 														   BUSER(cAXI_WRespUSERWidht-1 downto 0))
 											 )
@@ -92,7 +97,8 @@ procConnectGlobalAPB ( sGlobalAPB,
 procConnectMaster_AXILiteMiSo (  sAxiLiteMiSo,  	
                                 m_axi_awready ,	
                                 m_axi_wready  ,	
-                                m_axi_bready  , 
+                                m_axi_bresp   ,	
+                                m_axi_bvalid  , 
                                 m_axi_arready ,
                                 m_axi_rdata   ,	
                                 m_axi_rresp   ,
@@ -104,8 +110,7 @@ procConnectMaster_AXILiteMoSi ( sAxiLiteMoSi   ,
                                 m_axi_wdata   ,	
                                 m_axi_wstrb   ,	
                                 m_axi_wvalid  ,
-                                m_axi_bresp   ,	
-                                m_axi_bvalid  ,
+                                m_axi_bready  ,	
                                 m_axi_araddr  ,	
                                 m_axi_arprot  ,
                                 m_axi_arvalid ,                          

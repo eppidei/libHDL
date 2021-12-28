@@ -317,7 +317,7 @@ RRESP : std_logic_vector(1 downto 0);	-- RRESP Slave Read response, indicates th
 							-- See Read and write response structure on page A3-59.
 RVALID : std_logic;			-- RVALID Slave Indicates that the read data channel signals are valid.
 							-- See Channel handshake signals on page A3-42.
-ROPTIONAL : rAxi4LiteRDataMiSoOpt;
+ROPTIONAL : eppi;
 end record;
 
 type rAxi4LiteMoSi is record
@@ -341,7 +341,8 @@ end record;
 procedure procConnectMaster_AXILiteMiSo ( signal AxiLiteMiSo   : out rAxi4LiteMiSo;	
                                           signal m_axi_awready : in std_logic;	
                                           signal m_axi_wready  : in std_logic;	
-                                          signal m_axi_bready  : in std_logic; 
+                                          signal m_axi_bresp   : in std_logic_vector;	
+                                          signal m_axi_bvalid  : in std_logic;
                                           signal m_axi_arready : in std_logic;
                                           signal m_axi_rdata   : in std_logic_vector;	
                                           signal m_axi_rresp   : in std_logic_vector;
@@ -349,7 +350,8 @@ procedure procConnectMaster_AXILiteMiSo ( signal AxiLiteMiSo   : out rAxi4LiteMi
 procedure procConnectSlave_AXILiteMiSo ( signal AxiLiteMiSo   : in rAxi4LiteMiSo;	
                                          signal m_axi_awready : out std_logic;	
                                          signal m_axi_wready  : out std_logic;	
-                                         signal m_axi_bready  : out std_logic; 
+                                         signal m_axi_bresp   : out std_logic_vector;	
+                                         signal m_axi_bvalid  : out std_logic;
                                          signal m_axi_arready : out std_logic;
                                          signal m_axi_rdata   : out std_logic_vector;	
                                          signal m_axi_rresp   : out std_logic_vector;
@@ -361,8 +363,7 @@ procedure procConnectMaster_AXILiteMoSi ( signal AxiLiteMoSi   : in rAxi4LiteMoS
                                           signal m_axi_wdata   : out std_logic_vector;	
                                           signal m_axi_wstrb   : out std_logic_vector;	
                                           signal m_axi_wvalid  : out std_logic;
-                                          signal m_axi_bresp   : out std_logic_vector;	
-                                          signal m_axi_bvalid  : out std_logic;
+                                          signal m_axi_bready  : out std_logic; 
                                           signal m_axi_araddr  : out std_logic_vector;	
                                           signal m_axi_arprot  : out std_logic_vector;
                                           signal m_axi_arvalid : out std_logic;                          
@@ -374,8 +375,7 @@ procedure procConnectSlave_AXILiteMoSi ( signal AxiLiteMoSi    : out rAxi4LiteMo
                                           signal m_axi_wdata   : in std_logic_vector;	
                                           signal m_axi_wstrb   : in std_logic_vector;	
                                           signal m_axi_wvalid  : in std_logic;
-                                          signal m_axi_bresp   : in std_logic_vector;	
-                                          signal m_axi_bvalid  : in std_logic;
+                                          signal m_axi_bready  : in std_logic; 
                                           signal m_axi_araddr  : in std_logic_vector;	
                                           signal m_axi_arprot  : in std_logic_vector;
                                           signal m_axi_arvalid : in std_logic;                          
