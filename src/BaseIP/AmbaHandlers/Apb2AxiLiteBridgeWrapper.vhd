@@ -1,4 +1,4 @@
-ibrary ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 
 use work.Constants.all;
@@ -51,16 +51,22 @@ constant cAXI_WAddrIDWidht : natural := 1;
 constant cAXI_WDataIDWidht : natural := 1;
 constant cAXI_WAddrUSERWidht : natural := 1;
 constant cAXI_WDataUSERWidht : natural := 1;
+constant cAXI_RAddrUSERWidht : natural := 1;
+constant cAXI_RAddrIDWidht : natural := 1;
+constant cAXI_RDataUSERWidht : natural := 1;
+constant cAXI_RDataIDWidht : natural := 1;
+constant cAXI_WRespIDWidht : natural := 1;
+constant cAXI_WRespUSERWidht : natural := 1;
 
 signal sGlobalAPB   : rGlobalAPB;
-signal sAxiLiteMiSo : rAxi4LiteMiSo( RDataCh ( RDATA(gAXI_DATAWidth-1 downto 0)),
-									 WRespCh ( BOPTIONAL ( BID(gAXI_WRespIDWidht-1 downto 0) ,
-														   BUSER(gAXI_WRespUSERWidht-1 downto 0))
+signal sAxiLiteMiSo : rAxi4LiteMiSo( RDataCh ( RDATA(gDATAWidth-1 downto 0),ROPTIONAL(RID(cAXI_RDataIDWidht-1 downto 0),RUSER(cAXI_RDataUSERWidht-1 downto 0))),
+									 WRespCh ( BOPTIONAL ( BID(cAXI_WRespIDWidht-1 downto 0) ,
+														   BUSER(cAXI_WRespUSERWidht-1 downto 0))
 											 )
 									);
 signal sAxiLiteMoSi : rAxi4LiteMoSi( WAddrCh ( AWADDR(gADDRWidth-1 downto 0),
 											   AWOPTIONAL ( AWID(cAXI_WAddrIDWidht-1 downto 0),
-														    AWUSER(0 downto 0))
+														    AWUSER(cAXI_WAddrUSERWidht-1 downto 0))
 											 ),
 									 WDataCh ( WDATA(gDATAWidth-1 downto 0),
 											   WSTRB(gDATAWidth/cBYTELEN-1 downto 0),
@@ -68,15 +74,15 @@ signal sAxiLiteMoSi : rAxi4LiteMoSi( WAddrCh ( AWADDR(gADDRWidth-1 downto 0),
 														   WUSER(cAXI_WDataUSERWidht-1 downto 0))
 											 ),
 									 RAddrCh ( ARADDR(gADDRWidth-1 downto 0),
-											   AROPTIONAL ( AWID(cAXI_WAddrIDWidht-1 downto 0),
-														    AWUSER(cAXI_WAddrUSERWidht-1 downto 0))
+											   AROPTIONAL ( ARID(cAXI_RAddrIDWidht-1 downto 0),
+														    ARUSER(cAXI_RAddrUSERWidht-1 downto 0))
 											 )
 									 );
 
 signal sAPBMoSi : rAPBMoSi (PWDATA(gDATAWidth-1 downto 0),
                             PSTRB(gDATAWidth/cBYTELEN-1 downto 0),
                             PADDR(gADDRWidth-1 downto 0));
-signal sAPBMiSo : rAPBMiSo (PWDATA(gDATAWidth-1 downto 0));
+signal sAPBMiSo : rAPBMiSo (PRDATA(gDATAWidth-1 downto 0));
 
 begin
 
@@ -103,9 +109,9 @@ procConnectMaster_AXILiteMoSi ( sAxiLiteMoSi   ,
                                 m_axi_araddr  ,	
                                 m_axi_arprot  ,
                                 m_axi_arvalid ,                          
-                                m_axi_rready  )
+                                m_axi_rready  );
 
-iApb2AxiLiteBridge : work.eApb2AxiLiteBridge
+iApb2AxiLiteBridge : entity work.eApb2AxiLiteBridge
 generic map(
 gAPB_ADDRWidth   => gADDRWidth,
 gAPB_DATAWidth   => gDATAWidth,

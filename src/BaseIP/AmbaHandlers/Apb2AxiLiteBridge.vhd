@@ -27,7 +27,7 @@ port (
 iGlobal     : in rGlobalAPB;
 --APB Slave
 iS_Apb        : in rAPBMoSi (PWDATA(gAPB_DATAWidth-1 downto 0),PSTRB(gAPB_DATAWidth/cBYTELEN-1 downto 0),PADDR(gAPB_ADDRWidth-1 downto 0));
-oS_Apb        : out rAPBMiSo (PWDATA(gAPB_DATAWidth-1 downto 0));
+oS_Apb        : out rAPBMiSo (PRDATA(gAPB_DATAWidth-1 downto 0));
 --Axi Lite Master
 oM_AxiLite    : out rAxi4LiteMoSi( WAddrCh ( AWADDR(gAXI_ADDRWidth-1 downto 0),
 											   AWOPTIONAL ( AWID(gAXI_WAddrIDWidht-1 downto 0),
@@ -39,8 +39,8 @@ oM_AxiLite    : out rAxi4LiteMoSi( WAddrCh ( AWADDR(gAXI_ADDRWidth-1 downto 0),
 														   WUSER(gAXI_WDataUSERWidht-1 downto 0))
 											 ),
 									 RAddrCh ( ARADDR(gAXI_ADDRWidth-1 downto 0),
-											   AROPTIONAL ( AWID(gAXI_WAddrIDWidht-1 downto 0),
-														    AWUSER(gAXI_WAddrUSERWidht-1 downto 0))
+											   AROPTIONAL ( ARID(gAXI_RAddrIDWidht-1 downto 0),
+														    ARUSER(gAXI_RAddrUSERWidht-1 downto 0))
 											 )
 									 );
 iM_AxiLite    : in rAxi4LiteMiSo( RDataCh ( RDATA(gAXI_DATAWidth-1 downto 0)),

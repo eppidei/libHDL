@@ -19,7 +19,7 @@ begin
 oPREADY  <= iAPBMiSo.PREADY;
 oPRDATA  <= iAPBMiSo.PRDATA;
 oPSLVERR <= iAPBMiSo.PSLVERR;
-end procedure procConnectAPBMiSo;
+end procedure procConnectSlaveAPBMiSo;
     
 procedure procConnectSlaveAPBMoSi ( signal oAPBMoSi : out rAPBMoSi ;
                                signal iPPROT   : in std_logic_vector(2 downto 0);
@@ -37,6 +37,6 @@ oAPBMoSi.PWRITE     <= iPWRITE;
 oAPBMoSi.PWDATA     <= iPWDATA;
 oAPBMoSi.PSTRB      <= iPSTRB;
 oAPBMoSi.PADDR      <= iPADDR;
-end procedure procConnectAPBMoSi;
+end procedure procConnectSlaveAPBMoSi;
 
 end package body Amba3;
