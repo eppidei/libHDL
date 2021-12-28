@@ -1,6 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
-package Amba2 is
+package Amba3 is
 --type definitions
 type rGlobalAPB is record
     PCLK        : std_logic; --The rising edge of PCLK times all transfers on the APB.
@@ -43,7 +43,7 @@ procedure procConnectGlobalAPB ( signal oGlobalAPB   : out rGlobalAPB;
                                  signal iClock        : in std_logic; 
                                  signal iResetn       : in std_logic); 
 
- procedure procConnectAPBMoSi ( signal oAPBMoSi	: out rAPBMoSi ;
+ procedure procConnectSlaveAPBMoSi ( signal oAPBMoSi	: out rAPBMoSi ;
                                 signal iPPROT   : in std_logic_vector(2 downto 0);
                                 signal iPSELx   : in std_logic;                   
                                 signal iPENABLE : in std_logic;                  
@@ -52,10 +52,10 @@ procedure procConnectGlobalAPB ( signal oGlobalAPB   : out rGlobalAPB;
                                 signal iPSTRB   : in std_logic_vector;           
                                 signal iPADDR   : in std_logic_vector  );
 
- procedure procConnectAPBMiSo ( signal iAPBMiSo   : in rAPBMiSo;
+ procedure procConnectSlaveAPBMiSo ( signal iAPBMiSo   : in rAPBMiSo;
                                 signal oPREADY    : out std_logic;       
                                 signal oPRDATA    : out std_logic_vector;           
                                 signal oPSLVERR   : out std_logic   );
-end package Amba2;
+end package Amba3;
 
 

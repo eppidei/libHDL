@@ -3,18 +3,51 @@ use ieee.std_logic_1164.all;
 
 use work.Constants.all;
 use work.axi4.all;
-use work.amba2.all;
+use work.amba3.all;
 
 entity eApb2AxiLiteBridge is
+generic (
+    gAPB_ADDRWidth      : natural;
+    gAPB_DATAWidth      : natural;
+	gAXI_ADDRWidth 	    : natural;
+	gAXI_DATAWidth 	    : natural;
+	gAXI_WAddrIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_WDataIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_WRespIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_RAddrIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_RDataIDWidht   : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_WAddrUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_WDataUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_WRespUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_RAddrUSERWidht : natural:=1; --opt. fields set by default to 1 if not used
+	gAXI_RDataUSERWidht : natural:=1  --opt. fields set by default to 1 if not used
+);
 port (
 
 iGlobal     : in rGlobalAPB;
 --APB Slave
-iApb        : in rAPBMoSi;
-oApb        : out rAPBMiSo;
+iS_Apb        : in rAPBMoSi (PWDATA(gAPB_DATAWidth-1 downto 0),PSTRB(gAPB_DATAWidth/cBYTELEN-1 downto 0),PADDR(gAPB_ADDRWidth-1 downto 0));
+oS_Apb        : out rAPBMiSo (PWDATA(gAPB_DATAWidth-1 downto 0));
 --Axi Lite Master
-oAxiLite    : out rAxi4LiteMoSi;
-iAxiLite    : out rAxi4LiteMiSo
+oM_AxiLite    : out rAxi4LiteMoSi( WAddrCh ( AWADDR(gAXI_ADDRWidth-1 downto 0),
+											   AWOPTIONAL ( AWID(gAXI_WAddrIDWidht-1 downto 0),
+														    AWUSER(gAXI_WAddrUSERWidht-1 downto 0))
+											 ),
+									 WDataCh ( WDATA(gAXI_DATAWidth-1 downto 0),
+											   WSTRB(gAXI_DATAWidth/cBYTELEN-1 downto 0),
+											   WOPTIONAL ( WID(gAXI_WDataIDWidht-1 downto 0),
+														   WUSER(gAXI_WDataUSERWidht-1 downto 0))
+											 ),
+									 RAddrCh ( ARADDR(gAXI_ADDRWidth-1 downto 0),
+											   AROPTIONAL ( AWID(gAXI_WAddrIDWidht-1 downto 0),
+														    AWUSER(gAXI_WAddrUSERWidht-1 downto 0))
+											 )
+									 );
+iM_AxiLite    : in rAxi4LiteMiSo( RDataCh ( RDATA(gAXI_DATAWidth-1 downto 0)),
+									 WRespCh ( BOPTIONAL ( BID(gAXI_WRespIDWidht-1 downto 0) ,
+														   BUSER(gAXI_WRespUSERWidht-1 downto 0))
+											 )
+									)
 
 );
 end entity eApb2AxiLiteBridge;
@@ -27,69 +60,69 @@ signal sState : StateT;
 begin
 
 
-oAxiLite.WAddrCh.AWADDR <= iApb.PADDR ;--and iApb.PWRITE;
-oAxiLite.WAddrCh.AWPROT <= iApb.PPROT ;--and iApb.PWRITE;
-oAxiLite.RAddrCh.ARADDR <= iApb.PADDR ;--and not(iApb.PWRITE);
-oAxiLite.RAddrCh.ARPROT <= iApb.PPROT ;--and not(iApb.PWRITE);
-oAxiLite.WDataCh.WVALID <= iApb.PENABLE when sState=WDATA else cLOW;--and not(iApb.PWRITE);
-oAxiLite.WDataCh.WSTRB  <= iApb.PSTRB ;-- when sState=WDATA else (oAxiLite.WDataCh.WSTRB´range=>'0');--and not(iApb.PWRITE);
-oAxiLite.WDataCh.WDATA  <= iApb.PWDATA ;--when sState=WDATA else (oAxiLite.WDataCh.WDATA´range=>'0');--and not(iApb.PWRITE);
-oAxiLite.WRespCh.BREADY <= '1';--and not(iApb.PWRITE);
+oM_AxiLite.WAddrCh.AWADDR <= iS_Apb.PADDR ;--and iS_Apb.PWRITE;
+oM_AxiLite.WAddrCh.AWPROT <= iS_Apb.PPROT ;--and iS_Apb.PWRITE;
+oM_AxiLite.RAddrCh.ARADDR <= iS_Apb.PADDR ;--and not(iS_Apb.PWRITE);
+oM_AxiLite.RAddrCh.ARPROT <= iS_Apb.PPROT ;--and not(iS_Apb.PWRITE);
+oM_AxiLite.WDataCh.WVALID <= iS_Apb.PENABLE when sState=WDATA else cLOW;--and not(iS_Apb.PWRITE);
+oM_AxiLite.WDataCh.WSTRB  <= iS_Apb.PSTRB ;-- when sState=WDATA else (oM_AxiLite.WDataCh.WSTRB´range=>'0');--and not(iS_Apb.PWRITE);
+oM_AxiLite.WDataCh.WDATA  <= iS_Apb.PWDATA ;--when sState=WDATA else (oM_AxiLite.WDataCh.WDATA´range=>'0');--and not(iS_Apb.PWRITE);
+oM_AxiLite.WRespCh.BREADY <= '1';--and not(iS_Apb.PWRITE);
 
-oApb.PSLVERR            <= cHIGH when iAxiLite.WRespCh.BVALID='1' and iAxiLite.WRespCh.BRESP/="00" else
-                            cHIGH when iAxiLite.RDataCh.RVALID='1' and iAxiLite.RDataCh.RRESP/="00" else
+oS_Apb.PSLVERR            <= cHIGH when iM_AxiLite.WRespCh.BVALID='1' and iM_AxiLite.WRespCh.BRESP/="00" else
+                            cHIGH when iM_AxiLite.RDataCh.RVALID='1' and iM_AxiLite.RDataCh.RRESP/="00" else
                             cLOW;
-oApb.PREADY             <= iAxiLite.WDataCh.WREADY when sState=WDATA else
-                            iAxiLite.RDataCh.RVALID when (sState=RDATA and iApb.PENABLE=cHIGH) else
+oS_Apb.PREADY             <= iM_AxiLite.WDataCh.WREADY when sState=WDATA else
+                            iM_AxiLite.RDataCh.RVALID when (sState=RDATA and iS_Apb.PENABLE=cHIGH) else
                             '0';
-oApb.PRDATA             <= iAxiLite.RDataCh.RDATA;
+oS_Apb.PRDATA             <= iM_AxiLite.RDataCh.RDATA;
 
 pFSM : process(iGlobal.PCLK)
 begin
 if rising_edge(iGlobal.PCLK) then
     if (iGlobal.PRESETn=cLOW) then
         sState                   <= IDLE;
-        oAxiLite.WAddrCh.AWVALID <= cLOW;
-        oAxiLite.RAddrCh.ARVALID <= cLOW;
-        oAxiLite.RDataCh.RREADY  <= cLOW;  
+        oM_AxiLite.WAddrCh.AWVALID <= cLOW;
+        oM_AxiLite.RAddrCh.ARVALID <= cLOW;
+        oM_AxiLite.RDataCh.RREADY  <= cLOW;  
     else
         case sState is 
 
         when IDLE =>  sState <= IDLE;
-                      oAxiLite.WAddrCh.AWVALID <= cLOW;
-                      oAxiLite.RAddrCh.ARVALID <= cLOW;
-                      if iApb.PSELx=cHIGH then
-                        if iApb.PWRITE=cHIGH then
-                            oAxiLite.WAddrCh.AWVALID <= cHIGH;
+                      oM_AxiLite.WAddrCh.AWVALID <= cLOW;
+                      oM_AxiLite.RAddrCh.ARVALID <= cLOW;
+                      if iS_Apb.PSELx=cHIGH then
+                        if iS_Apb.PWRITE=cHIGH then
+                            oM_AxiLite.WAddrCh.AWVALID <= cHIGH;
                             sState <= WADDRESS;
                         else
-                            oAxiLite.RAddrCh.ARVALID <= cHIGH;
+                            oM_AxiLite.RAddrCh.ARVALID <= cHIGH;
                             sState <= RADDRESS;
                         end if;                
 
                      end if;
         when WADDRESS => sState <= WDATA;
-                         oAxiLite.WAddrCh.AWVALID <= cHIGH;
-                        if iAxiLite.WAddrCh.AWREADY=cHIGH then
+                         oM_AxiLite.WAddrCh.AWVALID <= cHIGH;
+                        if iM_AxiLite.WAddrCh.AWREADY=cHIGH then
                             sState <= WDATA;
-                            oAxiLite.WAddrCh.AWVALID <= cLOW;
+                            oM_AxiLite.WAddrCh.AWVALID <= cLOW;
                         end if;
         when RADDRESS => sState <= RDATA;
-                         oAxiLite.RAddrCh.ARVALID <= cHIGH;
-                         oAxiLite.RDataCh.RREADY <= cLOW;  
-                         if iAxiLite.RAddrCh.ARREADY=cHIGH then
-                            oAxiLite.RAddrCh.ARVALID <= cLOW;
-                            oAxiLite.RDataCh.RREADY <= cHIGH;   
+                         oM_AxiLite.RAddrCh.ARVALID <= cHIGH;
+                         oM_AxiLite.RDataCh.RREADY <= cLOW;  
+                         if iM_AxiLite.RAddrCh.ARREADY=cHIGH then
+                            oM_AxiLite.RAddrCh.ARVALID <= cLOW;
+                            oM_AxiLite.RDataCh.RREADY <= cHIGH;   
                             sState <= RDATA;
                          end if;
         when WDATA    => sState <= WDATA; 
-                        if iAxiLite.WDataCh.WREADY=cHIGH then
+                        if iM_AxiLite.WDataCh.WREADY=cHIGH then
                             sState <= IDLE;
                         end if;
-        when RDATA    => oAxiLite.RDataCh.RREADY <= cHIGH;
+        when RDATA    => oM_AxiLite.RDataCh.RREADY <= cHIGH;
                          sState <= RDATA;
-                         if iAxiLite.RDataCh.RVALID=cHIGH then
-                            oAxiLite.RDataCh.RREADY <= cLOW;
+                         if iM_AxiLite.RDataCh.RVALID=cHIGH then
+                            oM_AxiLite.RDataCh.RREADY <= cLOW;
                             sState <= IDLE;
                          end if;
         when others => null;
@@ -99,5 +132,5 @@ if rising_edge(iGlobal.PCLK) then
 end if;
 end process;
 
-end aBehavioral;
+end architecture aBehavioral;
 

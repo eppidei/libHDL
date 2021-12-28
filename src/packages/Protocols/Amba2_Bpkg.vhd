@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-package body Amba2 is
+package body Amba3 is
 
 procedure procConnectGlobalAPB ( signal oGlobalAPB    : out rGlobalAPB; 
                                  signal iClock        : in std_logic; 
@@ -11,7 +11,7 @@ oGlobalAPB.PCLK      <= iClock;
 oGlobalAPB.PRESETN   <= iResetn;
 end procedure procConnectGlobalAPB;
 
-procedure procConnectAPBMiSo ( signal iAPBMiSo   : in rAPBMiSo;
+procedure procConnectSlaveAPBMiSo ( signal iAPBMiSo   : in rAPBMiSo;
                                signal oPREADY    : out std_logic;       
                                signal oPRDATA    : out std_logic_vector;           
                                signal oPSLVERR   : out std_logic   ) is
@@ -21,7 +21,7 @@ oPRDATA  <= iAPBMiSo.PRDATA;
 oPSLVERR <= iAPBMiSo.PSLVERR;
 end procedure procConnectAPBMiSo;
     
-procedure procConnectAPBMoSi ( signal oAPBMoSi : out rAPBMoSi ;
+procedure procConnectSlaveAPBMoSi ( signal oAPBMoSi : out rAPBMoSi ;
                                signal iPPROT   : in std_logic_vector(2 downto 0);
                                signal iPSELx   : in std_logic;                   
                                signal iPENABLE : in std_logic;                  
@@ -39,4 +39,4 @@ oAPBMoSi.PSTRB      <= iPSTRB;
 oAPBMoSi.PADDR      <= iPADDR;
 end procedure procConnectAPBMoSi;
 
-end package body Amba2;
+end package body Amba3;
